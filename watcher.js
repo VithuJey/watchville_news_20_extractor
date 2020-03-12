@@ -18,7 +18,7 @@ const watcher = async () => {
   const response_data = await get_news();
   //   console.log(response_data);
   const news_json_arr = await process_news(response_data);
-    // console.log(news_json_arr)
+  // console.log(news_json_arr)
 
   const date_now = await getDateTime();
 
@@ -45,7 +45,6 @@ const process_news = async response_data => {
   for (let [i, post] of posts_arr.entries()) {
     let news_json = {};
 
-    
     news_json.position = i + 1;
 
     for (feed of feeds_arr) {
@@ -58,9 +57,11 @@ const process_news = async response_data => {
     news_json.title = post.title;
     news_json.link = post.source_url;
     news_json.text_excerpt = post.excerpt;
-    news_json.published_at = new Date(post.published_at * 1000).toLocaleDateString();
+    news_json.published_at = new Date(
+      post.published_at * 1000
+    ).toLocaleDateString();
     news_json.total_views = post.total_views;
-    
+
     news_json_arr.push(news_json);
   }
 
@@ -75,9 +76,40 @@ const write_to_google_sheets = async (news_json_arr, date_now) => {
 
     const newSheet = await doc.addSheet({
       title: date_now,
-      headerValues: ["position", "blog_name", "picture", "title", "link", "text_excerpt", "published_at", "total_views"]
+      headerValues: [
+        "position",
+        "blog_name",
+        "picture",
+        "title",
+        "link",
+        "text_excerpt",
+        "published_at",
+        "total_views"
+      ]
     });
     const moreRows = await newSheet.addRows(news_json_arr);
+
+    let col_prop = {
+      hiddenByFilter: false,
+      hiddenByUser: false,
+      pixelSize: "200"
+    };
+    let row_prop = {
+      hiddenByFilter: false,
+      hiddenByUser: false,
+      pixelSize: "140"
+    };
+    let col_bounds = {
+      startIndex: 2,
+      endIndex: 4
+    };
+    let row_bounds = {
+      startIndex: 1,
+      endIndex: 21
+    };
+
+    await newSheet.updateDimensionProperties("COLUMNS", col_prop, col_bounds);
+    await newSheet.updateDimensionProperties("ROWS", row_prop, row_bounds);
 
     console.log("write_to_google_sheets done ", date_now);
   } catch (error) {
@@ -112,13 +144,15 @@ const getDateTime = async () => {
     .then(res => {
       let datetime = res.data.datetime;
       date = datetime.split("T")[0];
-      time = datetime.split("T")[1].split(".")[0].replace(/:/g, "-");
+      time = datetime
+        .split("T")[1]
+        .split(".")[0]
+        .replace(/:/g, "-");
     })
     .catch(error => console.log(error));
 
   return date + ", " + time;
 };
-
 
 let job = new CronJob(
   "0 0 10,22 * * *",
