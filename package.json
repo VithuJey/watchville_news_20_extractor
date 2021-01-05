@@ -13,7 +13,7 @@
   "author": "VithushanJey",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "cron": "^1.8.2",
     "google-spreadsheet": "^3.0.9"
   }
